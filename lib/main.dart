@@ -1,4 +1,5 @@
 //import 'views/onboardingscreen.dart';
+//import 'views/member/member_dashboard.dart';
 import 'views/admin/admin_dashboard.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart'; 
@@ -28,9 +29,9 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.light,
         ),
       ),
-      //      title: 'Flutter Demo',
       //      home: OnBoardingScreen(),
       title: 'Club Management System',
+      //home: const MemberDashboard(),
       home: const AdminDashboard(),
       debugShowCheckedModeBanner: false,
     );

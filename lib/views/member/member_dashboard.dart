@@ -1,53 +1,50 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../models/task.dart';
 import 'home_tab.dart';
 import 'announcements_tab.dart';
-import 'tasks_tab.dart';
-import 'finance_tab.dart';
 import 'events_tab.dart';
-import 'members_tab.dart';
+import 'tasks_tab.dart';
 import 'gallery_tab.dart';
 
-class AdminDashboard extends StatefulWidget {
-  const AdminDashboard({Key? key}) : super(key: key);
+class MemberDashboard extends StatefulWidget {
+  const MemberDashboard({Key? key}) : super(key: key);
 
   @override
-  State<AdminDashboard> createState() => _AdminDashboardState();
+  State<MemberDashboard> createState() => _MemberDashboardState();
 }
 
-class _AdminDashboardState extends State<AdminDashboard> {
+class _MemberDashboardState extends State<MemberDashboard> {
   int _selectedIndex = 0;
-  late final List<Widget> _pages;
-  List<Task> _tasks = []; // Initialize directly instead of using late
+  final List<Widget> _pages = [
+    const Center(child: CircularProgressIndicator()),
+  ];
+  final List<Task> _tasks = [];
 
   @override
   void initState() {
     super.initState();
-    _pages = [
-      HomeTab(
-        onNavigate: changeTab,
-        tasks: _tasks,
-        isMember: false,
-      ),
-      const AnnouncementsTab(),
-      const TasksTab(),
-      const FinanceTab(),
-      const EventsTab(),
-      const MembersTab(),
-      const GalleryTab(),
-    ];
+    _initializePages();
   }
 
-  void changeTab(int index) {
-    if (index >= 0 && index < _pages.length) {
-      setState(() {
-        _selectedIndex = index;
-      });
-    }
-  }
-
-  void _onTabSelected(int index) {
-    changeTab(index);  // Use the same changeTab method for consistency
+  void _initializePages() {
+    setState(() {
+      _pages.clear();
+      _pages.addAll([
+        HomeTab(
+          onNavigate: (index) {
+            setState(() {
+              _selectedIndex = index;
+            });
+          },
+          tasks: _tasks,
+        ),
+        const AnnouncementsTab(),
+        const TasksTab(),
+        const EventsTab(),
+        const GalleryTab(),
+      ]);
+    });
   }
 
   @override
@@ -77,10 +74,16 @@ class _AdminDashboardState extends State<AdminDashboard> {
         iconTheme: const IconThemeData(color: Colors.black),
         titleTextStyle: const TextStyle(color: Colors.black),
       ),
-      body: _pages[_selectedIndex],
+      body: _pages.isEmpty
+          ? const Center(child: CircularProgressIndicator())
+          : _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onTabSelected,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         type: BottomNavigationBarType.fixed,
         items: const [
           BottomNavigationBarItem(
@@ -96,16 +99,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
             label: 'Tasks',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.attach_money),
-            label: 'Finance',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.event),
             label: 'Events',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.people),
-            label: 'Members',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.photo_library),

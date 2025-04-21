@@ -100,12 +100,10 @@ class _FinanceTabState extends State<FinanceTab> with SingleTickerProviderStateM
           ),
         ],
       ),
-      floatingActionButton: !widget.isMember
-          ? FloatingActionButton(
-              onPressed: _showAddTransactionDialog,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: widget.isMember ? null : FloatingActionButton(
+        onPressed: _showAddTransactionDialog,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 

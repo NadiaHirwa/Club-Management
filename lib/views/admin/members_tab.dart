@@ -1,14 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../models/models.dart';
 
 class MembersTab extends StatefulWidget {
-  final bool isMember;
-
-  const MembersTab({
-    Key? key,
-    this.isMember = false,
-  }) : super(key: key);
+  const MembersTab({Key? key}) : super(key: key);
 
   @override
   State<MembersTab> createState() => _MembersTabState();
@@ -18,30 +12,31 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
   late TabController _tabController;
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
+  
   final List<Member> _members = [
     Member(
       name: "John Doe",
-      email: "john@example.com",
-      phone: "1234567890",
-      role: MemberRole.admin,
-      joinDate: "${DateTime.now().subtract(const Duration(days: 365)).day}/${DateTime.now().subtract(const Duration(days: 365)).month}/${DateTime.now().subtract(const Duration(days: 365)).year}",
+      email: "john.doe@example.com",
+      phone: "+1 234 567 8901",
+      joinDate: "January 15, 2024",
       status: MemberStatus.active,
+      role: MemberRole.member,
     ),
     Member(
       name: "Jane Smith",
-      email: "jane@example.com",
-      phone: "0987654321",
-      role: MemberRole.member,
-      joinDate: "${DateTime.now().subtract(const Duration(days: 180)).day}/${DateTime.now().subtract(const Duration(days: 180)).month}/${DateTime.now().subtract(const Duration(days: 180)).year}",
+      email: "jane.smith@example.com",
+      phone: "+1 234 567 8902",
+      joinDate: "February 1, 2024",
       status: MemberStatus.active,
+      role: MemberRole.admin,
     ),
     Member(
-      name: "Bob Johnson",
-      email: "bob@example.com",
-      phone: "1122334455",
-      role: MemberRole.member,
-      joinDate: "${DateTime.now().subtract(const Duration(days: 90)).day}/${DateTime.now().subtract(const Duration(days: 90)).month}/${DateTime.now().subtract(const Duration(days: 90)).year}",
+      name: "Mike Johnson",
+      email: "mike.johnson@example.com",
+      phone: "+1 234 567 8903",
+      joinDate: "March 10, 2024",
       status: MemberStatus.inactive,
+      role: MemberRole.member,
     ),
   ];
 
@@ -66,7 +61,7 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
     return members.where((member) {
       return member.name.toLowerCase().contains(query) ||
           member.email.toLowerCase().contains(query) ||
-          member.phone.contains(query);
+          member.phone.toLowerCase().contains(query);
     }).toList();
   }
 
@@ -93,19 +88,17 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
               controller: _tabController,
               children: [
                 _buildMemberList(_filterMembers(_members)),
-                _buildMemberList(_filterMembers(_members.where((member) => member.status == MemberStatus.active).toList())),
-                _buildMemberList(_filterMembers(_members.where((member) => member.status == MemberStatus.inactive).toList())),
+                _buildMemberList(_filterMembers(_members.where((m) => m.status == MemberStatus.active).toList())),
+                _buildMemberList(_filterMembers(_members.where((m) => m.status == MemberStatus.inactive).toList())),
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: !widget.isMember
-          ? FloatingActionButton(
-              onPressed: _showAddMemberDialog,
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddMemberDialog,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
@@ -199,6 +192,9 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
   }
 
   Widget _buildMemberCard(Member member) {
+    final isActive = member.status == MemberStatus.active;
+    final color = isActive ? Colors.green : Colors.grey;
+    
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(
@@ -225,15 +221,11 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
                   children: [
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: () {
-                        _showEditMemberDialog(member);
-                      },
+                      onPressed: () => _showEditMemberDialog(member),
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete),
-                      onPressed: () {
-                        _showDeleteConfirmation(member);
-                      },
+                      onPressed: () => _showDeleteConfirmation(member),
                     ),
                   ],
                 ),
@@ -264,13 +256,6 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
             const SizedBox(height: 8),
             Row(
               children: [
-                Icon(Icons.person, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 8),
-                Text(
-                  member.role.toString().split('.').last,
-                  style: TextStyle(color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 16),
                 Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 8),
                 Text(
@@ -280,22 +265,44 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
               ],
             ),
             const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _getStatusColor(member.status).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: _getStatusColor(member.status).withOpacity(0.3),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: color.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    member.status.toString().split('.').last,
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                member.status.toString().split('.').last,
-                style: TextStyle(
-                  color: _getStatusColor(member.status),
-                  fontSize: 12,
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    member.role.toString().split('.').last,
+                    style: const TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -303,24 +310,13 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
     );
   }
 
-  Color _getStatusColor(MemberStatus status) {
-    switch (status) {
-      case MemberStatus.active:
-        return Colors.green;
-      case MemberStatus.inactive:
-        return Colors.red;
-      case MemberStatus.all:
-        return Colors.grey;
-    }
-  }
-
   void _showAddMemberDialog() {
     final nameController = TextEditingController();
     final emailController = TextEditingController();
     final phoneController = TextEditingController();
     final joinDateController = TextEditingController(text: "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}");
-    MemberRole selectedRole = MemberRole.member;
-    MemberStatus selectedStatus = MemberStatus.active;
+    var selectedStatus = MemberStatus.active;
+    var selectedRole = MemberRole.member;
 
     showDialog(
       context: context,
@@ -332,94 +328,98 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Full Name",
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: "Name",
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: "Email",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: "Phone Number",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(
+                  labelText: "Phone",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
               ),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: joinDateController,
-              decoration: const InputDecoration(
-                labelText: "Join Date",
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.calendar_today),
+              const SizedBox(height: 16),
+              TextField(
+                controller: joinDateController,
+                decoration: const InputDecoration(
+                  labelText: "Join Date",
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (date != null) {
+                    joinDateController.text = "${date.day}/${date.month}/${date.year}";
+                  }
+                },
               ),
-              readOnly: true,
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) {
-                  joinDateController.text = "${date.day}/${date.month}/${date.year}";
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<MemberRole>(
-              value: selectedRole,
-              decoration: const InputDecoration(
-                labelText: "Role",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              StatefulBuilder(
+                builder: (context, setState) => DropdownButtonFormField<MemberStatus>(
+                  value: selectedStatus,
+                  decoration: const InputDecoration(
+                    labelText: "Status",
+                    border: OutlineInputBorder(),
+                  ),
+                  items: MemberStatus.values.map((status) {
+                    return DropdownMenuItem(
+                      value: status,
+                      child: Text(status.toString().split('.').last),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => selectedStatus = value);
+                    }
+                  },
+                ),
               ),
-              items: MemberRole.values.map((role) {
-                return DropdownMenuItem(
-                  value: role,
-                  child: Text(role.toString().split('.').last),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  selectedRole = value;
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<MemberStatus>(
-              value: selectedStatus,
-              decoration: const InputDecoration(
-                labelText: "Status",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<MemberRole>(
+                value: selectedRole,
+                decoration: const InputDecoration(
+                  labelText: "Role",
+                  border: OutlineInputBorder(),
+                ),
+                items: MemberRole.values.map((role) {
+                  return DropdownMenuItem(
+                    value: role,
+                    child: Text(role.toString().split('.').last),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    selectedRole = value;
+                  }
+                },
               ),
-              items: MemberStatus.values.map((status) {
-                return DropdownMenuItem(
-                  value: status,
-                  child: Text(status.toString().split('.').last),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  selectedStatus = value;
-                }
-              },
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -437,9 +437,9 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
                     name: nameController.text,
                     email: emailController.text,
                     phone: phoneController.text,
-                    role: selectedRole,
                     joinDate: joinDateController.text,
                     status: selectedStatus,
+                    role: selectedRole,
                   ));
                 });
                 Navigator.pop(context);
@@ -457,8 +457,8 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
     final emailController = TextEditingController(text: member.email);
     final phoneController = TextEditingController(text: member.phone);
     final joinDateController = TextEditingController(text: member.joinDate);
-    MemberRole selectedRole = member.role;
-    MemberStatus selectedStatus = member.status;
+    var selectedStatus = member.status;
+    var selectedRole = member.role;
 
     showDialog(
       context: context,
@@ -470,94 +470,98 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
             fontWeight: FontWeight.w600,
           ),
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: "Full Name",
-                border: OutlineInputBorder(),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: "Name",
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: "Email",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: "Email",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.emailAddress,
               ),
-              keyboardType: TextInputType.emailAddress,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: "Phone Number",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: phoneController,
+                decoration: const InputDecoration(
+                  labelText: "Phone",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
               ),
-              keyboardType: TextInputType.phone,
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: joinDateController,
-              decoration: const InputDecoration(
-                labelText: "Join Date",
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(Icons.calendar_today),
+              const SizedBox(height: 16),
+              TextField(
+                controller: joinDateController,
+                decoration: const InputDecoration(
+                  labelText: "Join Date",
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                readOnly: true,
+                onTap: () async {
+                  final date = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (date != null) {
+                    joinDateController.text = "${date.day}/${date.month}/${date.year}";
+                  }
+                },
               ),
-              readOnly: true,
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(2020),
-                  lastDate: DateTime.now(),
-                );
-                if (date != null) {
-                  joinDateController.text = "${date.day}/${date.month}/${date.year}";
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<MemberRole>(
-              value: selectedRole,
-              decoration: const InputDecoration(
-                labelText: "Role",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              StatefulBuilder(
+                builder: (context, setState) => DropdownButtonFormField<MemberStatus>(
+                  value: selectedStatus,
+                  decoration: const InputDecoration(
+                    labelText: "Status",
+                    border: OutlineInputBorder(),
+                  ),
+                  items: MemberStatus.values.map((status) {
+                    return DropdownMenuItem(
+                      value: status,
+                      child: Text(status.toString().split('.').last),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => selectedStatus = value);
+                    }
+                  },
+                ),
               ),
-              items: MemberRole.values.map((role) {
-                return DropdownMenuItem(
-                  value: role,
-                  child: Text(role.toString().split('.').last),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  selectedRole = value;
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<MemberStatus>(
-              value: selectedStatus,
-              decoration: const InputDecoration(
-                labelText: "Status",
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<MemberRole>(
+                value: selectedRole,
+                decoration: const InputDecoration(
+                  labelText: "Role",
+                  border: OutlineInputBorder(),
+                ),
+                items: MemberRole.values.map((role) {
+                  return DropdownMenuItem(
+                    value: role,
+                    child: Text(role.toString().split('.').last),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    selectedRole = value;
+                  }
+                },
               ),
-              items: MemberStatus.values.map((status) {
-                return DropdownMenuItem(
-                  value: status,
-                  child: Text(status.toString().split('.').last),
-                );
-              }).toList(),
-              onChanged: (value) {
-                if (value != null) {
-                  selectedStatus = value;
-                }
-              },
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -576,9 +580,9 @@ class _MembersTabState extends State<MembersTab> with SingleTickerProviderStateM
                     name: nameController.text,
                     email: emailController.text,
                     phone: phoneController.text,
-                    role: selectedRole,
                     joinDate: joinDateController.text,
                     status: selectedStatus,
+                    role: selectedRole,
                   );
                 });
                 Navigator.pop(context);
@@ -624,27 +628,26 @@ class Member {
   final String name;
   final String email;
   final String phone;
-  final MemberRole role;
   final String joinDate;
   final MemberStatus status;
+  final MemberRole role;
 
   Member({
     required this.name,
     required this.email,
     required this.phone,
-    required this.role,
     required this.joinDate,
     required this.status,
+    required this.role,
   });
-}
-
-enum MemberRole {
-  admin,
-  member,
 }
 
 enum MemberStatus {
   active,
   inactive,
-  all,
+}
+
+enum MemberRole {
+  admin,
+  member,
 } 
